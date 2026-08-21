@@ -25,15 +25,15 @@ jobs:
       - name: Build and push Backend Image
         uses: docker/build-push-action@v4
         with:
-          context: ./ecommerce-backend
-          file: ./ecommerce-backend/Dockerfile
+          context: ./ecommerce-app/backend
+          file: ./ecommerce-app/backend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-backend:latest
         
       - name: Build and push Frontend Image
         uses: docker/build-push-action@v4
         with:
-          context: ./ecommerce-frontend
-          file: ./ecommerce-frontend/Dockerfile
+          context: ./ecommerce-app/frontend
+          file: ./ecommerce-app/frontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend:latest
