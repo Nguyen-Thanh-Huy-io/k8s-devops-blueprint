@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/3yRwYrbQAyG30VnO/VO7NieW1ko7KUYsvRS9iDLyq6a8cwwowZCyLuXWVqXQtmjxKef/0M3wCjfOGUJHixcHqCCs/gFLBw5XYQYKlhZcUFFsDdA74OiSvC5jGH+waSZdZck7AhVHe8kfJKScNij6dtuqXvmvm67vanRjIea0PRm2A8Dtg3cK3A4s/sw7g3zG1hoDx1z35IhHEc6LDw2wzA342KoI37ou2E2hnksoR5XBgtMYV05Edcz0pn9UufNqyA5Iv3DldscmUod8crJo3tOeDoJTcEJXcHCo/uZlRNUIPELruKEM9jv8DRdWnjZttft4Cj+1fFRkc5QQQxJC3/7U1Ip/l6DHZqhqSCmoIGCAwvPjxNUoJheWacNub9UkNkxaUjvf4nxf7bvNpzLez+fTuJFS52vwRd/vUb+a/M0wf3+KwAA//+6uNBgEAIAAA
+    objectset.rio.cattle.io/id: 63a2745d-7ee7-4532-a296-ca2728388a40
+  creationTimestamp: "2026-06-20T17:59:06Z"
+  labels:
+    objectset.rio.cattle.io/hash: 465ee74c2ca99c6de9088b09d2c5ce1758b22ee9
+  name: ecommerce-backend-service
+  namespace: ecommerce
+  resourceVersion: "255514"
+  uid: f3231e31-562b-4322-8ef4-62deb4a08cec
+spec:
+  clusterIP: 10.106.157.104
+  clusterIPs:
+  - 10.106.157.104
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: tcp
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: ecommerce-backend
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

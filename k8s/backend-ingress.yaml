@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    field.cattle.io/publicEndpoints: '[{"addresses":["10.96.49.204"],"port":80,"protocol":"HTTP","serviceName":"ecommerce:ecommerce-backend-service","ingressName":"ecommerce:ecommerce-backend-ingress","hostname":"api-ecommerce.thanhhuy.vn","path":"/","allNodes":false}]'
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/3yQPW/DIBCG/8vNtuMQf2DWTl2qDlWXqsMZXwO1DQhImsjyf69I0kpV1UoMgB4e3vcWQKefyQdtDQgwFD+sH7XZFyMPhbab4xYyGLUZQMC92XsKATKYKeKAEUEsgMbYiFFbE9LR9u8kY6BYeG0LiTFOlEQ6GZodsraqh7wlavOq3rEcWdfkElnL+I5zrEpYM5iwp+lfncKgQEDV1ERtJZnErpPNQF3JeV92A5O1pG1b854xoi5JDc4EAkjaeSYvKe9RjmSGXH/3SkhwKH9w6W1wJFOcG3o3YQgPV5/Za3OCDPxhogDiZQFlQwSRJpv//swa52kuokKj1OFcHA1koGJ0Se8wqqvjhqfLQP6oU6Tl7wpfTAbO+nhBD3NPHgQvebmua3Zxg4ANXLdPZ5dUj57e9AnW1zWtzwAAAP//TSHvlA8CAAA
+    objectset.rio.cattle.io/id: 63a2745d-7ee7-4532-a296-ca2728388a40
+  creationTimestamp: "2026-06-20T17:59:07Z"
+  generation: 2
+  labels:
+    objectset.rio.cattle.io/hash: 465ee74c2ca99c6de9088b09d2c5ce1758b22ee9
+  name: ecommerce-backend-ingress
+  namespace: ecommerce
+  resourceVersion: "818636"
+  uid: a2bb5212-bd81-446f-bf0f-15b6071354f1
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: api-ecommerce.thanhhuy.vn
+    http:
+      paths:
+      - backend:
+          service:
+            name: ecommerce-backend-service
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.96.49.204

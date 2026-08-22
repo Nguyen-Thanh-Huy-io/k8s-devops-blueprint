@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "19"
+    field.cattle.io/publicEndpoints: '[{"addresses":["10.96.49.204"],"port":80,"protocol":"HTTP","serviceName":"ecommerce:ecommerce-backend-service","ingressName":"ecommerce:ecommerce-backend-ingress","hostname":"api-ecommerce.thanhhuy.vn","path":"/","allNodes":false}]'
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/4xTTW/bOBD9LwPsTbJlxR8yb4vsYRcIFkaT9FLkMKImFmt+gRw5Fgz994JSHDhpg/YmkfPem3lveAb06iuFqJwFAeh9nB8XkMFB2QYE/ENeu96QZcjAEGODjCDOgNY6RlbOxvTr6u8kORLPgnIzicyaZsrNVSJZ32C5Wa6afEO0yZermzLHcrvOJZabsrqpKlwWMGSgsSY90qH3IICkM4aCpLxGeSDbQPapUIuxBQHL9Ypos5SlxO1WrhvaFlVVF9umlCtJi82qqsuSaJvkLBr6lUreXA+dqqJH+a40waMnOfV6ZaAlfnHhoOx+dqhiauzazf/sPlCMH6y89HFC4zV9kHx2LokF8lpJjCAW6eeokt6/KrIL/Z0yikEsFhlE0iTZhURrkGV791tLh6tR1NTfrcYY/5+6sntlT5BB6DRFEN/O0LrI46qo/I1txi3atu36mXQGMmiZfSL0yO2EusiJM0QKR5WG+zj6/etFBt4FHu87U1MAURVD6jPRgYA5TJ8PvU/oXaBndYLhaRie0jAckGnfJ3xwWiu7f/QNMk2mnO67sE+wcvVXCgJPjxaPqDTW+nI8ZMAT95d3BOmcjNcXsqsQZaDxNTwoQ5HReBC20/pPlnr4ZMmuCy4JSWcZlaUwuaoMjrO0Xd92fVEuivlPcDFu4Fi567TeOa1kDwL+1i/YR/j8HbzmMCm9Ce/GaKqiKt6QLH2qDY6ddBoEPNzuUhxPwzAMPwIAAP//la6qomIEAAA
+    objectset.rio.cattle.io/id: 63a2745d-7ee7-4532-a296-ca2728388a40
+  creationTimestamp: "2026-06-20T17:59:06Z"
+  generation: 80
+  labels:
+    app: ecommerce-backend
+    objectset.rio.cattle.io/hash: 465ee74c2ca99c6de9088b09d2c5ce1758b22ee9
+  name: ecommerce-backend-deployment
+  namespace: ecommerce
+  resourceVersion: "890350"
+  uid: 4fabddf5-b49a-4839-9259-a03fb06c7308
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 11
+  selector:
+    matchLabels:
+      app: ecommerce-backend
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        cattle.io/timestamp: "2026-06-23T15:50:02Z"
+        kubectl.kubernetes.io/restartedAt: "2026-08-19T07:45:00Z"
+      creationTimestamp: null
+      labels:
+        app: ecommerce-backend
+      namespace: ecommerce
+    spec:
+      containers:
+      - envFrom:
+        - secretRef:
+            name: ecommerce-backend-database-connection
+            optional: false
+        image: huyhuy0210/ecommerce-backend:v2
+        imagePullPolicy: Always
+        name: ecommerce-backend
+        ports:
+        - containerPort: 8080
+          name: tcp
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1028Mi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /run/src/main/resources/application.properties
+          name: ecommerce-backend-application-properties-config-volume
+          subPath: application.properties
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: ecommerce-backend-application-properties-configmap
+        name: ecommerce-backend-application-properties-config-volume
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2026-08-19T09:13:55Z"
+    lastUpdateTime: "2026-08-19T09:14:26Z"
+    message: ReplicaSet "ecommerce-backend-deployment-df9bdbcd5" has successfully
+      progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2026-08-22T03:24:59Z"
+    lastUpdateTime: "2026-08-22T03:24:59Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 80
+  readyReplicas: 2
+  replicas: 2
+  updatedReplicas: 2

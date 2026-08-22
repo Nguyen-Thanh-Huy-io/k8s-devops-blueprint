@@ -1,0 +1,55 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/3yQMW+DMBBG/8vNkGACBNiqLh2jqOl+nI/EjbEtfK3aRPz3ClqpyZLxpOenz+8KGMwbj9F4By3gh/hIaI07rj8VJHA2TkMLL340F+8E7c7rpz+IR0hgYEGNgtBeAZ3zgmK8i/Ppu3cmiSyr0fgVoYjllfFrMxv7PNdVrijV3Ki02LJOm4LLtCnqXGPdbza6gykBix3bh7oTxhO0sOnLKquyQmnVqy3pQlFd51vVFKqkrGFiVTV1Xs9ShwNDC0x+GHgkTjukMzud3vwffrEYkO7Y+X0MTPOkAb/2HKwhjNAWCQzG/d95AkulVxyPLHvul0R3tUOId5k1B+u/B3YCD0beUFMCsuifd4eDGGsuS/7dzDvBI0NbZtP0EwAA//+kozeN5gEAAA
+    objectset.rio.cattle.io/id: f22d621c-de91-47ed-94e5-9482da8f33db
+  creationTimestamp: "2026-06-23T16:40:14Z"
+  labels:
+    objectset.rio.cattle.io/hash: 3f5606041d1f17cd41c882719415c09ece169828
+  name: ecommerce-backend-autoscaling
+  namespace: ecommerce
+  resourceVersion: "902677"
+  uid: 078a3d4b-7c76-4e2f-b237-901da89cb961
+spec:
+  maxReplicas: 4
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 50
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: deployment
+    name: ecommerce-backend-deployment
+status:
+  conditions:
+  - lastTransitionTime: "2026-07-11T12:27:14Z"
+    message: recommended size matches current size
+    reason: ReadyForNewScale
+    status: "True"
+    type: AbleToScale
+  - lastTransitionTime: "2026-08-22T03:25:16Z"
+    message: the HPA was able to successfully calculate a replica count from cpu resource
+      utilization (percentage of request)
+    reason: ValidMetricFound
+    status: "True"
+    type: ScalingActive
+  - lastTransitionTime: "2026-08-21T07:30:01Z"
+    message: the desired replica count is less than the minimum replica count
+    reason: TooFewReplicas
+    status: "True"
+    type: ScalingLimited
+  currentMetrics:
+  - resource:
+      current:
+        averageUtilization: 0
+        averageValue: 2m
+      name: cpu
+    type: Resource
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2026-08-22T03:30:47Z"
