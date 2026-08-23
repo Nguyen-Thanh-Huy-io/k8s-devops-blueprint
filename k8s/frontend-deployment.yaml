@@ -1,74 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "7"
-    field.cattle.io/publicEndpoints: '[{"addresses":["10.96.49.204"],"port":80,"protocol":"HTTP","serviceName":"ecommerce:ecommerce-frontend-service","ingressName":"ecommerce:ecommerce-frontend-ingress","hostname":"ecommerce.thanhhuy.vn","path":"/","allNodes":false}]'
-    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/4xTTW/bMAz9LwR2cxLHcdpEt6E7bEAxBGu7y9ADLTOxFn1BotMYgf/7ILsp0m7ddrMlvvfI96gToFffKUTlLAhA7+PsMIcM9srWIOATee06Q5YhA0OMNTKCOAFa6xhZORvTr6t+kuRIPA3KTSUya5oqN1OJ5Cq/Xl4XcjFZF/V2Ui6ul5N1LasJ1rIo8znKelVCn4HGivRAh96DAJLOGAqSJtvgLJOtIXtXqcHYgAC5WubruqqQpNxW1TwvS7moschpXc5LWqwxX1wVVCQ9i4b+KDOpL8dOZdGjfFWb8NGTHLu9sNASP7mwV3Y33a9i6uzSzy92FyjGN2aeGzmi8ZreSG6dS2KBvFYSI4gy/RxU0vusIrvQ3SqjGMR8nkEkTZJdSLQGWTa3/za1v5hFjQ3eaIzx69iW3Sl7hAxCqymC+HGCxkW+pJpyg7Zp2m4qnYEMGmafyDxyMyIqlPskJU4QKRxUmuzt3HfPFxl4F3i4b01FAcQq71OPiQ4EzGD8vO98Qm8CbdUR+se+f0yDcECmXZfwwWmt7O7B18g0OnK8a8MuwYrlh5QCHh8sHlBprPT5uM+AR+5vrwjSORmvz2QXCcpAw2O4V4Yio/EgbKv1f+10/86Kvao45yOdZVSWwuirMjhM07Rd03Z5Mc9nv+PFsIFD6abVeuO0kh0I+KifsIvwl4fwnMWo9SK9GeJZ5S9Alj5VBsdOOg0C7m82KZDHvu/7XwEAAP//D+ctVWMEAAA
-    objectset.rio.cattle.io/id: 607572c3-92df-4375-9dcb-adc2401acd84
-  creationTimestamp: "2026-06-20T16:40:59Z"
-  generation: 21
-  labels:
-    app: ecommerce-frontend
-    objectset.rio.cattle.io/hash: c8509dbbaeccfbb1044c3da20e9414e39a0362e2
   name: ecommerce-frontend-deployment
   namespace: ecommerce
-  resourceVersion: "889094"
-  uid: 1ecf2105-de01-4af5-90e9-b093a9cafd68
+  labels:
+    app: ecommerce-frontend
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 11
   selector:
     matchLabels:
       app: ecommerce-frontend
   strategy:
+    type: RollingUpdate
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
-    type: RollingUpdate
   template:
     metadata:
-      annotations:
-        kubectl.kubernetes.io/restartedAt: "2026-06-23T10:26:33Z"
-      creationTimestamp: null
       labels:
         app: ecommerce-frontend
-      namespace: ecommerce
     spec:
       containers:
-      - image: huyhuy0210/ecommerce-frontend:v2
+      - name: ecommerce-frontend
+        image: huyhuy0210/ecommerce-frontend:v2
         imagePullPolicy: Always
-        name: ecommerce-frontend
         ports:
         - containerPort: 80
           name: tcp
           protocol: TCP
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
-      schedulerName: default-scheduler
-      securityContext: {}
-      terminationGracePeriodSeconds: 30
-status:
-  availableReplicas: 1
-  conditions:
-  - lastTransitionTime: "2026-06-20T16:40:59Z"
-    lastUpdateTime: "2026-06-23T10:26:57Z"
-    message: ReplicaSet "ecommerce-frontend-deployment-645b94fc54" has successfully
-      progressed.
-    reason: NewReplicaSetAvailable
-    status: "True"
-    type: Progressing
-  - lastTransitionTime: "2026-08-22T03:21:52Z"
-    lastUpdateTime: "2026-08-22T03:21:52Z"
-    message: Deployment has minimum availability.
-    reason: MinimumReplicasAvailable
-    status: "True"
-    type: Available
-  observedGeneration: 21
-  readyReplicas: 1
-  replicas: 1
-  updatedReplicas: 1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi

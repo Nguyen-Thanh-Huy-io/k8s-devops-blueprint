@@ -1,32 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/3yRQWvbQBCF/8s7S64sybGlWwkUcikCh15KDqPZUbLNanfZnRqM8X8vG1yXQulxhm8e72MuoGi/Sco2eIw4bVHh3XqDEUdJJ8uCCqsoGVLCeAF5H5TUBp/LGOYfwppFN8mGDZOqk40Nn2xJeGj2u33LXT20Zqn7br+rB8NzTYbbvtkSm0OPawVHs7j/xr1RfsMIPuyawcwzCfMyz9um77kz1DYy9NteuoGa7qGVtoR6WgUjhMO6SmKplxS8ijd1vosVJkfiv8BynKNw6WO9SvLknhMti+UpOMtnjHh0P7NKQgUbv9BqnZWM8TueplOPl/v2fD84Wv/q5KjE76gQQ9LCX363VI63NcZDUyGmoIGDw4jnxwkVlNKr6HQDri8VsjhhDenjKTH+U/VDRXJ57udlsd5q6fI1+CKv5yh/VJ4mXK+/AgAA//9p3L9jDgIAAA
-    objectset.rio.cattle.io/id: 607572c3-92df-4375-9dcb-adc2401acd84
-  creationTimestamp: "2026-06-20T16:40:59Z"
-  labels:
-    objectset.rio.cattle.io/hash: c8509dbbaeccfbb1044c3da20e9414e39a0362e2
   name: ecommerce-frontend-service
   namespace: ecommerce
-  resourceVersion: "245848"
-  uid: 71a56473-8753-4c34-9879-bd0c062e105c
 spec:
-  clusterIP: 10.101.242.219
-  clusterIPs:
-  - 10.101.242.219
-  internalTrafficPolicy: Cluster
-  ipFamilies:
-  - IPv4
-  ipFamilyPolicy: SingleStack
+  type: ClusterIP
+  selector:
+    app: ecommerce-frontend
   ports:
   - name: tcp
     port: 80
-    protocol: TCP
     targetPort: 80
-  selector:
-    app: ecommerce-frontend
-  sessionAffinity: None
-  type: ClusterIP
-status:
-  loadBalancer: {}
+    protocol: TCP
