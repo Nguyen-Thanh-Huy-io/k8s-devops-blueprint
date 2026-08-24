@@ -1,0 +1,27 @@
+# Kubernetes & Secrets (CRITICAL - Ngăn lộ mật khẩu)
+*secret.yaml
+*secret.yml
+!*sealedsecret.yaml
+!*sealedsecret.yml
+*.key
+*.pem
+.env
+.env.*
+
+# K8s Credentials & Config
+kubeconfig
+*.kubeconfig
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archives & Logs
+*.tar.gz
+*.zip
+*.log
+tmp/
