@@ -27,6 +27,33 @@ spec:
         - containerPort: 8080
           name: tcp
           protocol: TCP
+        # Startup probe: cho phép Spring Boot đủ thời gian khởi động
+        # (failureThreshold × periodSeconds = 30 × 10 = 300s tối đa)
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 30
+        # Readiness probe: kiểm tra app sẵn sàng nhận traffic
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        # Liveness probe: phát hiện app bị treo → restart container
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          failureThreshold: 3
+          successThreshold: 1
         envFrom:
         - secretRef:
             name: ecommerce-backend-database-connection

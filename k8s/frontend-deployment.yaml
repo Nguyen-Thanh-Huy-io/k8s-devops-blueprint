@@ -28,6 +28,32 @@ spec:
         - containerPort: 80
           name: tcp
           protocol: TCP
+        # Startup probe: Nginx khởi động nhanh, cần ít thời gian
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 6
+        # Readiness probe: Nginx sẵn sàng phục vụ request
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        # Liveness probe: phát hiện Nginx bị treo → restart
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          failureThreshold: 3
+          successThreshold: 1
         resources:
           requests:
             cpu: 100m
