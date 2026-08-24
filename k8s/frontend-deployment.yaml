@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: ecommerce-frontend
-        image: huyhuy0210/ecommerce-frontend:v2
+        image: huyhuy0210/ecommerce-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80
