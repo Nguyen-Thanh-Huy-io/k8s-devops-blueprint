@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: ecommerce-backend
-        image: huyhuy0210/ecommerce-backend:44e43e1
+        image: huyhuy0210/ecommerce-backend:a3d66b1
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
