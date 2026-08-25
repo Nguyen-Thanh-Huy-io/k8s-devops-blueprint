@@ -371,11 +371,11 @@ Backend expose REST API qua Spring Data REST:
 - [x] Containerize với Docker (multi-stage builds)
 - [x] Thiết lập CI pipeline với GitHub Actions
 - [x] Tích hợp ArgoCD cho GitOps deployment
-- [ ] Thêm Kubernetes manifests (Deployment, Service, Ingress, ConfigMap, Secret)
+- [x] Thêm Kubernetes manifests (Deployment, Service, Ingress, ConfigMap, Secret)
 - [ ] Thiết lập Helm Charts cho parameterized deployments
 - [ ] Tích hợp Prometheus + Grafana cho monitoring
-- [ ] Thêm Horizontal Pod Autoscaler (HPA)
-- [ ] Cấu hình Ingress Controller với TLS/SSL
+- [x] Thêm Horizontal Pod Autoscaler (HPA)
+- [x] Cấu hình Ingress Controller với TLS/SSL
 - [ ] Triển khai staging & production environments
 - [ ] Thêm integration tests vào CI pipeline
 - [ ] Setup SonarQube cho code quality scanning
