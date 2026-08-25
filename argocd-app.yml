@@ -11,7 +11,10 @@ spec:
   source:
     repoURL: https://github.com/Nguyen-Thanh-Huy-io/k8s-devops-blueprint.git
     targetRevision: main
-    path: k8s                         
+    path: helm/ecommerce-app          
+    helm:                             
+      valueFiles:
+        - values.yaml
 
   destination:
     server: https://kubernetes.default.svc
@@ -24,7 +27,7 @@ spec:
     syncOptions:
       - CreateNamespace=true          
       - PrunePropagationPolicy=foreground
-      - ServerSideApply=true           
+      - ServerSideApply=true          # Giúp Argo CD tự động ghi đè metadata/labels mà không bị lỗi ownership
     retry:
       limit: 3                         
       backoff:
