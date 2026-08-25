@@ -1,0 +1,48 @@
+# ============================================================
+# Production overrides
+# Sử dụng: helm install ecommerce ./helm/ecommerce-app -f helm/ecommerce-app/values-prod.yaml
+# ============================================================
+
+backend:
+  image:
+    tag: stable
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1024Mi
+    limits:
+      cpu: "2"
+      memory: 2048Mi
+
+  hpa:
+    minReplicas: 3
+    maxReplicas: 8
+    targetCPUUtilization: 60
+
+  ingress:
+    host: api.thanhhuy.vn
+
+  config:
+    jpa:
+      showSql: "false"
+    allowedOrigins: https://thanhhuy.vn
+
+frontend:
+  replicaCount: 2
+
+  image:
+    tag: stable
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  ingress:
+    host: thanhhuy.vn

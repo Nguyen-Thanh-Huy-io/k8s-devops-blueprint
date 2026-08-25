@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-backend-deployment
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "ecommerce.backend.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "ecommerce.backend.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: {{ .Values.strategy.type }}
+    rollingUpdate:
+      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}
+  template:
+    metadata:
+      labels:
+        {{- include "ecommerce.backend.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: ecommerce-backend
+        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.backend.service.port }}
+          name: tcp
+          protocol: TCP
+        startupProbe:
+          httpGet:
+            path: {{ .Values.backend.probes.startup.path }}
+            port: {{ .Values.backend.probes.startup.port }}
+          initialDelaySeconds: {{ .Values.backend.probes.startup.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.probes.startup.periodSeconds }}
+          failureThreshold: {{ .Values.backend.probes.startup.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.backend.probes.readiness.path }}
+            port: {{ .Values.backend.probes.readiness.port }}
+          initialDelaySeconds: {{ .Values.backend.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.probes.readiness.periodSeconds }}
+          failureThreshold: {{ .Values.backend.probes.readiness.failureThreshold }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.backend.probes.liveness.path }}
+            port: {{ .Values.backend.probes.liveness.port }}
+          initialDelaySeconds: {{ .Values.backend.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.probes.liveness.periodSeconds }}
+          failureThreshold: {{ .Values.backend.probes.liveness.failureThreshold }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.backend.secret.name }}
+            optional: false
+        resources:
+          requests:
+            cpu: {{ .Values.backend.resources.requests.cpu }}
+            memory: {{ .Values.backend.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.backend.resources.limits.cpu | quote }}
+            memory: {{ .Values.backend.resources.limits.memory }}
+        volumeMounts:
+        - name: backend-config-volume
+          mountPath: {{ .Values.backend.configMountPath }}
+          subPath: application.properties
+      volumes:
+      - name: backend-config-volume
+        configMap:
+          name: ecommerce-backend-configmap
+          defaultMode: 420

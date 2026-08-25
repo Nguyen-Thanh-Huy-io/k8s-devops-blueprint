@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-frontend-deployment
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "ecommerce.frontend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ecommerce.frontend.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: {{ .Values.strategy.type }}
+    rollingUpdate:
+      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}
+  template:
+    metadata:
+      labels:
+        {{- include "ecommerce.frontend.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: ecommerce-frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+        imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.frontend.service.port }}
+          name: tcp
+          protocol: TCP
+        startupProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.startup.path }}
+            port: {{ .Values.frontend.probes.startup.port }}
+          initialDelaySeconds: {{ .Values.frontend.probes.startup.initialDelaySeconds }}
+          periodSeconds: {{ .Values.frontend.probes.startup.periodSeconds }}
+          failureThreshold: {{ .Values.frontend.probes.startup.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.readiness.path }}
+            port: {{ .Values.frontend.probes.readiness.port }}
+          initialDelaySeconds: {{ .Values.frontend.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.frontend.probes.readiness.periodSeconds }}
+          failureThreshold: {{ .Values.frontend.probes.readiness.failureThreshold }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.liveness.path }}
+            port: {{ .Values.frontend.probes.liveness.port }}
+          initialDelaySeconds: {{ .Values.frontend.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.frontend.probes.liveness.periodSeconds }}
+          failureThreshold: {{ .Values.frontend.probes.liveness.failureThreshold }}
+        resources:
+          requests:
+            cpu: {{ .Values.frontend.resources.requests.cpu }}
+            memory: {{ .Values.frontend.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.frontend.resources.limits.cpu }}
+            memory: {{ .Values.frontend.resources.limits.memory }}

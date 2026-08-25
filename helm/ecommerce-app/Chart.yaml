@@ -1,0 +1,14 @@
+apiVersion: v2
+name: ecommerce-app
+description: Full-Stack E-Commerce Application (Spring Boot + Angular)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ecommerce
+  - spring-boot
+  - angular
+  - kubernetes
+maintainers:
+  - name: Nguyen Thanh Huy
+    url: https://github.com/Nguyen-Thanh-Huy-io

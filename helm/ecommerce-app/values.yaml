@@ -1,0 +1,151 @@
+# ============================================================
+# Default values for ecommerce-app Helm Chart
+# Dùng cho môi trường development
+# Override bằng: helm install -f values-prod.yaml ...
+# ============================================================
+
+global:
+  namespace: ecommerce
+
+# ======================== BACKEND ========================
+backend:
+  image:
+    repository: huyhuy0210/ecommerce-backend
+    tag: latest
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1024Mi
+
+  # Health Probes
+  probes:
+    startup:
+      path: /actuator/health
+      port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 30
+    readiness:
+      path: /actuator/health/readiness
+      port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      failureThreshold: 3
+    liveness:
+      path: /actuator/health/liveness
+      port: 8080
+      initialDelaySeconds: 10
+      periodSeconds: 15
+      failureThreshold: 3
+
+  # HPA
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilization: 50
+
+  # Ingress
+  ingress:
+    enabled: true
+    host: api-ecommerce.thanhhuy.vn
+    tls:
+      enabled: true
+      secretName: ecommerce-backend-tls
+
+  # Secret reference (SealedSecret phải được apply riêng)
+  secret:
+    name: ecommerce-backend-database-connection
+
+  # ConfigMap — application.properties
+  config:
+    datasource:
+      driverClassName: com.mysql.cj.jdbc.Driver
+    jpa:
+      ddlAuto: none
+      showSql: "true"
+      dialect: org.hibernate.dialect.MariaDBDialect
+    dataRest:
+      basePath: /api
+      detectionStrategy: ANNOTATED
+    allowedOrigins: http://ecommerce.thanhhuy.vn
+    okta:
+      clientId: 0oab0lzwjoN1Rjsar5d7
+      issuer: https://dev-82108115.okta.com/oauth2/default
+
+  # Volume mount path cho application.properties
+  configMountPath: /run/src/main/resources/application.properties
+
+# ======================== FRONTEND ========================
+frontend:
+  replicaCount: 1
+
+  image:
+    repository: huyhuy0210/ecommerce-frontend
+    tag: latest
+    pullPolicy: Always
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  # Health Probes
+  probes:
+    startup:
+      path: /
+      port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      failureThreshold: 6
+    readiness:
+      path: /
+      port: 80
+      initialDelaySeconds: 3
+      periodSeconds: 10
+      failureThreshold: 3
+    liveness:
+      path: /
+      port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 15
+      failureThreshold: 3
+
+  # Ingress
+  ingress:
+    enabled: true
+    host: ecommerce.thanhhuy.vn
+    tls:
+      enabled: true
+      secretName: ecommerce-frontend-tls
+
+# ======================== CERT-MANAGER ========================
+certManager:
+  enabled: true
+  clusterIssuer:
+    name: letsencrypt-prod
+    email: thanhhuy.devops@gmail.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+
+# ======================== STRATEGY ========================
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
