@@ -37,49 +37,47 @@ jobs:
 
       # --- BACKEND: BUILD -> SCAN -> PUSH ---
       - name: Build Backend Image (Local)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./ecommerce-app/backend
           file: ./ecommerce-app/backend/Dockerfile
-          load: true # Tải image vào local runner để Trivy quét
-          tags: ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+          load: true # Nạp image vào local runner
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+            ${{ env.BACKEND_IMAGE }}:latest
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Trivy Scan Backend Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: '${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}'
           format: 'table'
-          exit-code: '0' # Đổi thành '1' nếu muốn CHẶN pipeline khi có lỗ hổng CRITICAL
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
       - name: Push Backend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./ecommerce-app/backend
-          file: ./ecommerce-app/backend/Dockerfile
-          push: true
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
-            ${{ env.BACKEND_IMAGE }}:latest
-          cache-from: type=gha
+        run: |
+          docker push ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+          docker push ${{ env.BACKEND_IMAGE }}:latest
 
       # --- FRONTEND: BUILD -> SCAN -> PUSH ---
       - name: Build Frontend Image (Local)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./ecommerce-app/frontend
           file: ./ecommerce-app/frontend/Dockerfile
-          load: true # Tải image vào local runner để Trivy quét
-          tags: ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+          load: true # Nạp image vào local runner
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+            ${{ env.FRONTEND_IMAGE }}:latest
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Trivy Scan Frontend Image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: '${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}'
           format: 'table'
@@ -89,21 +87,14 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Push Frontend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./ecommerce-app/frontend
-          file: ./ecommerce-app/frontend/Dockerfile
-          push: true
-          tags: |
-            ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
-            ${{ env.FRONTEND_IMAGE }}:latest
-          cache-from: type=gha
+        run: |
+          docker push ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+          docker push ${{ env.FRONTEND_IMAGE }}:latest
 
       # --- CẬP NHẬT GITOPS: ĐỔI TAG TRONG HELM VALUES.YAML ---
       - name: Update Helm values.yaml with new image tag
         if: github.event_name == 'push'
         run: |
-          # Cập nhật tag mới vào file values.yaml của Helm
           sed -i "s|tag: \".*\"|tag: \"${{ steps.meta.outputs.sha_tag }}\"|g" helm/ecommerce-app/values.yaml || \
           sed -i "s|tag: .*|tag: ${{ steps.meta.outputs.sha_tag }}|g" helm/ecommerce-app/values.yaml
 
@@ -113,5 +104,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add helm/ecommerce-app/values.yaml
-          git diff --staged --quiet || git commit -m "ci: update helm image tag to ${{ steps.meta.outputs.sha_tag }}"
-          git push
+          git diff --staged --quiet || (git commit -m "ci: update helm image tag to ${{ steps.meta.outputs.sha_tag }}" && git push)
