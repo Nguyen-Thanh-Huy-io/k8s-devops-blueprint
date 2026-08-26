@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: {{ .Values.global.namespace }}
+spec:
+  serviceName: mariadb-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      securityContext:
+        fsGroup: 65543
+      containers:
+      - name: mariadb
+        image: mariadb:latest
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ecommerce-backend-database-connection
+              key: MARIADB_PASSWORD
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mariadb-storage
+          mountPath: /var/lib/mysql
+    volumes:
+    - name: mariadb-storage
+      persistentVolumeClaim:
+        claimName: nfs-vpc
+  
