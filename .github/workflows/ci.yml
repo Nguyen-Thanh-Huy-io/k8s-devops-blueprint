@@ -1,4 +1,4 @@
-name: CI Pipeline - Build & Push Images
+name: CI Pipeline - Build, Test & Push Images
 
 on:
   push:
@@ -11,7 +11,37 @@ env:
   FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend
 
 jobs:
-  build-and-push:
+  # 1. CHẠY TESTS CHO BACKEND VÀ FRONTEND
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test Backend
+        run: |
+          if [ -d "./ecommerce-app/backend" ]; then
+            cd ./ecommerce-app/backend
+            npm ci || true
+            npm test --if-present
+          fi
+
+      - name: Test Frontend
+        run: |
+          if [ -d "./ecommerce-app/frontend" ]; then
+            cd ./ecommerce-app/frontend
+            npm ci || true
+            npm test --if-present
+          fi
+
+  # 2. BUILD, SCAN TRIVY VÀ PUSH IMAGE
+  build-scan-push:
+    needs: test # Chỉ chạy khi bước Test thành công
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -35,7 +65,28 @@ jobs:
           echo "sha_tag=${SHA_SHORT}" >> $GITHUB_OUTPUT
           echo "🏷️ Image tag: ${SHA_SHORT}"
 
-      - name: Build and push Backend Image
+      # --- BACKEND: BUILD -> SCAN -> PUSH ---
+      - name: Build Backend Image (Local)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ecommerce-app/backend
+          file: ./ecommerce-app/backend/Dockerfile
+          load: true # Tải image vào local runner để Trivy quét
+          tags: ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trivy Scan Backend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}'
+          format: 'table'
+          exit-code: '0' # Đổi thành '1' nếu muốn CHẶN pipeline khi có lỗ hổng CRITICAL
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Backend Image
         uses: docker/build-push-action@v5
         with:
           context: ./ecommerce-app/backend
@@ -45,9 +96,29 @@ jobs:
             ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
             ${{ env.BACKEND_IMAGE }}:latest
           cache-from: type=gha
+
+      # --- FRONTEND: BUILD -> SCAN -> PUSH ---
+      - name: Build Frontend Image (Local)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ecommerce-app/frontend
+          file: ./ecommerce-app/frontend/Dockerfile
+          load: true # Tải image vào local runner để Trivy quét
+          tags: ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
+          cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Frontend Image
+      - name: Trivy Scan Frontend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Frontend Image
         uses: docker/build-push-action@v5
         with:
           context: ./ecommerce-app/frontend
@@ -57,20 +128,20 @@ jobs:
             ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}
             ${{ env.FRONTEND_IMAGE }}:latest
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
-      # Tự động cập nhật image tag trong K8s manifests
-      - name: Update K8s manifests with new image tag
+      # --- CẬP NHẬT GITOPS: ĐỔI TAG TRONG HELM VALUES.YAML ---
+      - name: Update Helm values.yaml with new image tag
         if: github.event_name == 'push'
         run: |
-          sed -i "s|image: ${{ env.BACKEND_IMAGE }}:.*|image: ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}|" k8s/backend-deployment.yaml
-          sed -i "s|image: ${{ env.FRONTEND_IMAGE }}:.*|image: ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.sha_tag }}|" k8s/frontend-deployment.yaml
+          # Cập nhật tag mới vào file values.yaml của Helm
+          sed -i "s|tag: \".*\"|tag: \"${{ steps.meta.outputs.sha_tag }}\"|g" helm/ecommerce-app/values.yaml || \
+          sed -i "s|tag: .*|tag: ${{ steps.meta.outputs.sha_tag }}|g" helm/ecommerce-app/values.yaml
 
-      - name: Commit and push updated manifests
+      - name: Commit and push updated Helm values
         if: github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add k8s/backend-deployment.yaml k8s/frontend-deployment.yaml
-          git diff --staged --quiet || git commit -m "ci: update image tags to ${{ steps.meta.outputs.sha_tag }}"
+          git add helm/ecommerce-app/values.yaml
+          git diff --staged --quiet || git commit -m "ci: update helm image tag to ${{ steps.meta.outputs.sha_tag }}"
           git push
