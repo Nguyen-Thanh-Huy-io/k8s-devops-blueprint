@@ -31,8 +31,8 @@ spec:
         volumeMounts:
         - name: mariadb-storage
           mountPath: /var/lib/mysql
-    volumes:
-    - name: mariadb-storage
-      persistentVolumeClaim:
-        claimName: nfs-vpc
+      volumes:
+      - name: mariadb-storage
+        persistentVolumeClaim:
+          claimName: nfs-vpc
   
