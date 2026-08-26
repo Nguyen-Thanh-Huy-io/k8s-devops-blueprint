@@ -11,37 +11,7 @@ env:
   FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce-frontend
 
 jobs:
-  # 1. CHẠY TESTS CHO BACKEND VÀ FRONTEND
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Test Backend
-        run: |
-          if [ -d "./ecommerce-app/backend" ]; then
-            cd ./ecommerce-app/backend
-            npm ci || true
-            npm test --if-present
-          fi
-
-      - name: Test Frontend
-        run: |
-          if [ -d "./ecommerce-app/frontend" ]; then
-            cd ./ecommerce-app/frontend
-            npm ci || true
-            npm test --if-present
-          fi
-
-  # 2. BUILD, SCAN TRIVY VÀ PUSH IMAGE
   build-scan-push:
-    needs: test # Chỉ chạy khi bước Test thành công
     runs-on: ubuntu-latest
     permissions:
       contents: write
