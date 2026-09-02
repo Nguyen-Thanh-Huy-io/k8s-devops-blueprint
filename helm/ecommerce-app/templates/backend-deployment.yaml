@@ -56,9 +56,11 @@ spec:
           requests:
             cpu: {{ .Values.backend.resources.requests.cpu }}
             memory: {{ .Values.backend.resources.requests.memory }}
+            ephemeral-storage: {{ .Values.backend.resources.requests.ephemeralStorage | default "500Mi" }}
           limits:
             cpu: {{ .Values.backend.resources.limits.cpu | quote }}
             memory: {{ .Values.backend.resources.limits.memory }}
+            ephemeral-storage: {{ .Values.backend.resources.limits.ephemeralStorage | default "2Gi" }}
         volumeMounts:
         - name: backend-config-volume
           mountPath: {{ .Values.backend.configMountPath }}
