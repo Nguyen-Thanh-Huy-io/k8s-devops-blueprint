@@ -1,0 +1,50 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: node-infrastructure-alerts
+  namespace: monitoring
+  labels:
+    release: thanhhuyvn-kube-prometheus
+spec:
+  groups:
+  - name: node-infrastructure.rules
+    rules:
+    # 1. Ổ đĩa Node còn dưới 15% dung lượng
+    - alert: NodeDiskSpaceLow
+      expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Ổ đĩa Node {{ $labels.instance }} sắp đầy"
+        description: "Dung lượng đĩa khả dụng trên Node {{ $labels.instance }} chỉ còn dưới 15%."
+
+    # 2. CPU Node hoạt động trên 85% kéo dài
+    - alert: NodeHighCpuUsage
+      expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 85
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "CPU Node {{ $labels.instance }} quá tải"
+        description: "Mức sử dụng CPU trung bình trên Node {{ $labels.instance }} đã vượt mức 85% trong 5 phút."
+
+    # 3. RAM Node khả dụng còn dưới 10%
+    - alert: NodeMemoryPressure
+      expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+      for: 3m
+      labels:
+        severity: critical
+      annotations:
+        summary: "RAM Node {{ $labels.instance }} sắp cạn kiệt"
+        description: "Bộ nhớ RAM khả dụng trên Node {{ $labels.instance }} rơi xuống dưới 10%."
+
+    # 4. Node rơi vào trạng thái NotReady (Mất kết nối)
+    - alert: NodeNotReady
+      expr: kube_node_status_condition{condition="Ready", status="true"} == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Node {{ $labels.node }} không hoạt động (NotReady)"
+        description: "Node {{ $labels.node }} đã mất kết nối với K8s Control Plane quá 2 phút."

@@ -1,0 +1,50 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: k8s-workload-extended-alerts
+  namespace: monitoring
+  labels:
+    release: thanhhuyvn-kube-prometheus
+spec:
+  groups:
+  - name: k8s-workload-extended.rules
+    rules:
+    # 1. Pod bị dừng do vỡ bộ nhớ (Out Of Memory - OOMKilled)
+    - alert: PodOOMKilled
+      expr: kube_pod_container_status_terminated_reason{reason="OOMKilled"} > 0
+      for: 0m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Container {{ $labels.container }} bị OOMKilled"
+        description: "Container {{ $labels.container }} trong Pod {{ $labels.pod }} (Namespace {{ $labels.namespace }}) bị K8s kill do tiêu tốn quá giới hạn RAM cho phép."
+
+    # 2. Deployment thiếu Pod so với cấu hình Desired
+    - alert: DeploymentReplicasMismatch
+      expr: kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Deployment {{ $labels.deployment }} không đủ Pod"
+        description: "Deployment {{ $labels.deployment }} (Namespace {{ $labels.namespace }}) đang chạy thiếu Pod so với cấu hình trong 5 phút."
+
+    # 3. StatefulSet (MariaDB, Redis...) bị giảm số lượng Pod
+    - alert: StatefulSetDown
+      expr: kube_statefulset_status_replicas_ready < kube_statefulset_status_replicas
+      for: 3m
+      labels:
+        severity: critical
+      annotations:
+        summary: "StatefulSet {{ $labels.statefulset }} bị sự cố"
+        description: "Một hoặc nhiều Pod của StatefulSet {{ $labels.statefulset }} (Namespace {{ $labels.namespace }}) đang không ở trạng thái Ready."
+
+    # 4. Pod bị kẹt không kéo được Image (ImagePullBackOff)
+    - alert: ContainerWaitingImagePull
+      expr: kube_pod_container_status_waiting_reason{reason=~"ImagePullBackOff|ErrImagePull"} > 0
+      for: 3m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod {{ $labels.pod }} không thể kéo Image"
+        description: "Container {{ $labels.container }} trong Pod {{ $labels.pod }} gặp lỗi ImagePullBackOff/ErrImagePull."
