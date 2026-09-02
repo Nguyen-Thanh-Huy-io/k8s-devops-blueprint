@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ecommerce-backend-jvm-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"  # Sidecar sẽ tự nạp file này vào Grafana
+data:
+  backend-jvm.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "panels": [
+        {
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "id": 1,
+          "title": "JVM Heap Memory Usage",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus" },
+              "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+              "legendFormat": "{{pod}} - Used"
+            }
+          ]
+        },
+        {
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "id": 2,
+          "title": "HTTP Request Rate (RPS)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus" },
+              "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (uri, status)",
+              "legendFormat": "{{uri}} [{{status}}]"
+            }
+          ]
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 38,
+      "tags": ["ecommerce", "backend"],
+      "time": { "from": "now-1h", "to": "now" },
+      "timezone": "browser",
+      "title": "Ecommerce Backend - JVM & API Metrics"
+    }
