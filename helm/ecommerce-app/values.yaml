@@ -22,11 +22,11 @@ backend:
     requests:
       cpu: "250m"
       memory: "512Mi"
-      ephemeralStorage: "500Mi"  # Dung lượng đĩa tối thiểu cần cấp
+      ephemeralStorage: "500Mi" 
     limits:
       cpu: "500m"
       memory: "1Gi"
-      ephemeralStorage: "2Gi
+      ephemeralStorage: "2Gi"
 
   # Health Probes
   probes:
