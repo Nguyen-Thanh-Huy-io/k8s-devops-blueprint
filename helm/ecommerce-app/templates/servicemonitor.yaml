@@ -4,7 +4,7 @@ metadata:
   name: ecommerce-backend-servicemonitor
   namespace: ecommerce
   labels:
-    release: thanhhuyvn-kube-prometheus
+    release: thanhhuyvnW
 spec:
   selector:
     matchLabels:
