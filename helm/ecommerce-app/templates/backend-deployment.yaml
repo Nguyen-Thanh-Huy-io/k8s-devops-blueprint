@@ -56,17 +56,23 @@ spec:
           requests:
             cpu: {{ .Values.backend.resources.requests.cpu }}
             memory: {{ .Values.backend.resources.requests.memory }}
-            ephemeral-storage: {{ .Values.backend.resources.requests.ephemeralStorage | default "500Mi" }}
+            ephemeral-storage: {{ index .Values.backend.resources.requests "ephemeral-storage" | default .Values.backend.resources.requests.ephemeralStorage | default "500Mi" }}
           limits:
             cpu: {{ .Values.backend.resources.limits.cpu | quote }}
             memory: {{ .Values.backend.resources.limits.memory }}
-            ephemeral-storage: {{ .Values.backend.resources.limits.ephemeralStorage | default "2Gi" }}
+            ephemeral-storage: {{ index .Values.backend.resources.limits "ephemeral-storage" | default .Values.backend.resources.limits.ephemeralStorage | default "2Gi" }}
         volumeMounts:
         - name: backend-config-volume
           mountPath: {{ .Values.backend.configMountPath }}
           subPath: application.properties
+        # === Bổ sung Mount /tmp vào RAM/emptyDir ===
+        - name: tmp-volume
+          mountPath: /tmp
       volumes:
       - name: backend-config-volume
         configMap:
           name: ecommerce-backend-configmap
           defaultMode: 420
+      # === Bổ sung Volume emptyDir cho /tmp ===
+      - name: tmp-volume
+        emptyDir: {}
