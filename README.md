@@ -18,22 +18,30 @@ An end-to-end DevOps project demonstrating the complete lifecycle of a modern ap
 
 ## Architecture Overview
 
-```text
-[Developer] -- push --> [GitHub] -- trigger --> [GitHub Actions CI]
-                                                      | (Build, Trivy Scan, Push)
-                                                      v
-                                                [Docker Hub]
-                                                      |
-[Kubernetes Cluster]                                  |
-    [ArgoCD] <----------- watches & auto-sync --------- (Update Helm tag in values.yaml)
-       |
-       v (deploys via Helm)
-    [ecommerce namespace]
-       |-- Ingress (TLS via cert-manager)
-       |-- Frontend (Angular / Nginx)
-       |-- Backend (Spring Boot / Tomcat)
-       |-- Database (MariaDB StatefulSet)
-       |-- Monitoring (ServiceMonitor)
+```mermaid
+graph TD
+    User[Developer] -->|1. kubeseal| SS[SealedSecret YAML]
+    SS -->|2. git push| Git[GitHub Repo]
+    Git -->|3. kubectl apply| K8s[K8s Cluster]
+    
+    subgraph Namespace ecommerce
+        SSController[SealedSecret Controller] -->|4. Unseal| K8sSecret[Native Secret]
+        App[Spring Boot Backend] -->|5. Reads Env| K8sSecret
+    end
+
+    subgraph External
+        DB[(MariaDB 172.16.129.13)]
+    end
+    
+    App -->|6. JDBC Connection| DB
+
+    subgraph Namespace monitoring
+        Prom[Prometheus] -->|7. Scrape /actuator/prometheus| App
+        Grafana[Grafana Dashboard] -->|8. Query PromQL| Prom
+        Prom -->|9. Trigger Alert| AM[Alertmanager]
+    end
+
+    AM -->|10. Send Notification| TG[Telegram Bot]
 ```
 
 ---
@@ -48,7 +56,7 @@ An end-to-end DevOps project demonstrating the complete lifecycle of a modern ap
 
 **DevOps & Infrastructure**
 * **Containerization**: Docker (Multi-stage builds)
-* **Orchestration**: Kubernetes, Helm
+* **Orchestration**: Kubernetes, Helm, Rancher
 * **CI/CD**: GitHub Actions, ArgoCD (GitOps)
 * **Networking**: Nginx Ingress Controller
 * **Security**: Bitnami SealedSecrets, cert-manager (Let's Encrypt), Trivy
@@ -95,11 +103,30 @@ Triggered on push/PR to `main`:
 * 2 Custom Grafana Dashboards: JVM Heap/HTTP metrics and MariaDB connections/slow queries.
 * 9 Alertmanager rules covering: Node resource exhaustion, OOMKilled pods, StatefulSet failures, and HTTP 5xx spikes.
 
-**Security**
-* Sensitive data (DB credentials, Okta tokens) encrypted in Git using **SealedSecrets**.
+**Security & Secret Management**
+* Secret management is fully integrated into the GitOps workflow using **Bitnami SealedSecrets** (as illustrated in the Architecture Overview).
 * Automated TLS certificate provisioning via **cert-manager**.
 * Minimum privilege configuration and strict CORS policies.
 * Actuator endpoints restricted, except for Kubernetes health probes and Prometheus scraping.
+
+---
+
+## Screenshots
+
+**ArgoCD GitOps Dashboard**
+![ArgoCD Dashboard](docs/images/argocd.png)
+
+**Rancher Cluster Management**
+![Rancher Dashboard](docs/images/rancher.png)
+
+**Prometheus & Grafana (HikariCP / JVM Metrics)**
+![Grafana HikariCP Dashboard](docs/images/grafana-hikaricp.png)
+
+**Alertmanager Telegram Notifications**
+![Telegram Alerts](docs/images/telegram-alerts.png)
+
+**E-Commerce Storefront**
+![App UI](docs/images/storefront.png)
 
 ---
 

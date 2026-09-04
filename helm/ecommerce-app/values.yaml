@@ -22,11 +22,11 @@ backend:
     requests:
       cpu: "250m"
       memory: "512Mi"
-      ephemeralStorage: "500Mi" 
+      ephemeral-storage: "500Mi" 
     limits:
       cpu: "500m"
       memory: "1Gi"
-      ephemeralStorage: "2Gi"
+      ephemeral-storage: "2Gi"
 
   # Health Probes
   probes:
