@@ -19,6 +19,8 @@ spec:
       containers:
       - name: mariadb
         image: mariadb:latest
+        args:
+        - --skip-name-resolve
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
@@ -35,4 +37,3 @@ spec:
       - name: mariadb-storage
         persistentVolumeClaim:
           claimName: nfs-pvc
-  
